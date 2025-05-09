@@ -22,6 +22,8 @@ def create_arg_parser():
                         help="language in [en, nl, de ,it]")
     parser.add_argument("-m", "--model", required=False, type=str, default="google/byt5-base",
                         help="The model you want to use, better choose from byT5, mbart, mT5")
+    parser.add_argument("-M", "--load-path", required=False, type=str, default="",
+                        help="Path to saved model")
     parser.add_argument("-ip", "--if_pre",
                         action='store_true',
                         help="if pre-train or not, here pre-train means fine-tuning on silver")
@@ -75,12 +77,13 @@ def main():
     lr = args.learning_rate
 
     # train
-    bart_classifier = Generator(lang, model)
+    bart_classifier = Generator(lang, model, args.load_path)
 
-    if args.if_pre: # if pretrain or not
-        train_dataloader_pre = get_dataloader(args.pretrain)
-        bart_classifier.train(train_dataloader_pre, dev_dataloader, lr=lr, epoch_number=3)
-    bart_classifier.train(train_dataloader, dev_dataloader, lr=lr, epoch_number=epoch)
+    if not args.load_path:
+        if args.if_pre: # if pretrain or not
+            train_dataloader_pre = get_dataloader(args.pretrain)
+            bart_classifier.train(train_dataloader_pre, dev_dataloader, lr=lr, epoch_number=3)
+        bart_classifier.train(train_dataloader, dev_dataloader, lr=lr, epoch_number=epoch)
 
     # Define the full path to the final directory
     final_path = os.path.join(save_path, lang, model.replace('/', '-'))
@@ -98,7 +101,8 @@ def main():
         bart_classifier.evaluate(cha_dataloader, os.path.join(save_path,
                                                               f"{lang}/{model.replace('/', '-')}/challenge{i}.sbn"))
 
-    # bart_classifier.model.save_pretrained(args.model_save)
+    if not args.load_path:
+        bart_classifier.model.save_pretrained(args.model_save)
 
 
 if __name__ == '__main__':
