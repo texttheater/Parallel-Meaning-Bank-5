@@ -39,7 +39,7 @@ def get_dataloader(input_file_path, batch_size=Config["batch_size"]):
 
 class Generator:
 
-    def __init__(self, lang, model, load_path=""):
+    def __init__(self, lang, model, load_path="", local_files_only=False):
         """
         Initialize the model and tokenizer.
 
@@ -48,10 +48,10 @@ class Generator:
         :param load_path: The path to load a model from (optional)
         """
         self.device = torch.device(f"cuda:{Config['cuda_index']}" if torch.cuda.is_available() else "cpu")
-        self.tokenizer, self.model = self.initialize_model_and_tokenizer(model, load_path)
+        self.tokenizer, self.model = self.initialize_model_and_tokenizer(model, load_path,local_files_only)
         self.model.to(self.device)
 
-    def initialize_model_and_tokenizer(self, model, load_path):
+    def initialize_model_and_tokenizer(self, model, load_path, local_files_only):
         """
         Initialize the tokenizer and model based on model type.
 
@@ -60,17 +60,35 @@ class Generator:
         :return: The tokenizer and model
         """
         if "byt5" in model:
-            tokenizer = ByT5Tokenizer.from_pretrained(model)
+            tokenizer = ByT5Tokenizer.from_pretrained(
+                model,
+                local_files_only=local_files_only),
+            )
             model_instance = T5ForConditionalGeneration.from_pretrained(
-                load_path if load_path else model, max_length=Config["max_length"])
+                load_path if load_path else model,
+                max_length=Config["max_length"],
+                local_files_only=local_files_only,
+            )
         elif "mt5" in model:
-            tokenizer = MT5Tokenizer.from_pretrained(model)
+            tokenizer = MT5Tokenizer.from_pretrained(
+                model,
+                local_files_only=local_files_only,
+            )
             model_instance = MT5ForConditionalGeneration.from_pretrained(
-                load_path if load_path else model, max_length=Config["max_length"])
+                load_path if load_path else model,
+                max_length=Config["max_length"],
+                local_files_only=local_files_only,
+            )
         elif "mbart" in model:
-            tokenizer = MBartTokenizer.from_pretrained(model)
+            tokenizer = MBartTokenizer.from_pretrained(
+                model,
+                local_files_only=local_files_only,
+            )
             model_instance = MBartForConditionalGeneration.from_pretrained(
-                load_path if load_path else model, max_length=Config["max_length"])
+                load_path if load_path else model,
+                max_length=Config["max_length"],
+                local_files_only=local_files_only,
+            )
         else:
             raise ValueError("Model type not supported")
 

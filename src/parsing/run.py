@@ -22,6 +22,8 @@ def create_arg_parser():
                         help="language in [en, nl, de ,it]")
     parser.add_argument("-m", "--model", required=False, type=str, default="google/byt5-base",
                         help="The model you want to use, better choose from byT5, mbart, mT5")
+    parser.add_argument("--local-files_only", action="store_true",
+                        help="Don't try to download model files, only use local ones")
     parser.add_argument("-ip", "--if_pre",
                         action='store_true',
                         help="if pre-train or not, here pre-train means fine-tuning on silver")
@@ -75,7 +77,7 @@ def main():
     lr = args.learning_rate
 
     # train
-    bart_classifier = Generator(lang, model)
+    bart_classifier = Generator(lang, model, local_files_only=args.local_files_only)
 
     if args.if_pre: # if pretrain or not
         train_dataloader_pre = get_dataloader(args.pretrain)
