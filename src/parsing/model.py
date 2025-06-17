@@ -62,7 +62,7 @@ class Generator:
         if "byt5" in model:
             tokenizer = ByT5Tokenizer.from_pretrained(
                 model,
-                local_files_only=local_files_only),
+                local_files_only=local_files_only,
             )
             model_instance = T5ForConditionalGeneration.from_pretrained(
                 load_path if load_path else model,
